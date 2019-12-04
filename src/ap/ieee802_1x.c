@@ -2564,6 +2564,7 @@ static void ieee802_1x_finished(struct hostapd_data *hapd,
 	    !sta->hs20_deauth_requested &&
 	    wpa_auth_pmksa_add(sta->wpa_sm, key, session_timeout,
 			       sta->eapol_sm) == 0) {
+		// Posible lugar para el curl para el server de llaves
 		hostapd_logger(hapd, sta->addr, HOSTAPD_MODULE_WPA,
 			       HOSTAPD_LEVEL_DEBUG,
 			       "Added PMKSA cache entry (IEEE 802.1X)");
