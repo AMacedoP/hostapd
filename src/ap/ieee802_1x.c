@@ -33,6 +33,7 @@
 #include "hs20.h"
 #include "ieee802_1x.h"
 
+#include <curl/curl.h>
 
 static void ieee802_1x_finished(struct hostapd_data *hapd,
 				struct sta_info *sta, int success,
@@ -2565,6 +2566,46 @@ static void ieee802_1x_finished(struct hostapd_data *hapd,
 	    wpa_auth_pmksa_add(sta->wpa_sm, key, session_timeout,
 			       sta->eapol_sm) == 0) {
 		// Posible lugar para el curl para el server de llaves
+		struct rsn_pmksa_cache_entry *pcacheE = wpa_auth_sta_get_pmksa(sta->wpa_sm);
+
+		char pmk[(PMK_LEN*2)+1];
+		char pmkid[(PMKID_LEN*2)+1];
+		char staAddr[(6*2)+1];
+
+		wpa_snprintf_hex(pmk, sizeof(pmk), key, PMK_LEN);
+		wpa_snprintf_hex(pmkid, sizeof(pmkid), pcacheE->pmkid, PMKID_LEN);
+		wpa_snprintf_hex(staAddr, sizeof(staAddr), sta->addr, 6);
+
+		char *staName = "sta=";
+		char *pmkName = "&pmk=";
+		char *pmkidName = "&pmkid=";
+
+		int postDataSize = strlen(staName)
+						 + sizeof(staAddr)
+						 + strlen(pmkName)
+						 + sizeof(pmk)
+						 + strlen(pmkidName)
+						 + sizeof(pmkid);
+		char postData[postDataSize];
+		strcpy(postData, staName);
+		strcat(postData, staAddr);
+		strcat(postData, pmkName);
+		strcat(postData, pmk);
+		strcat(postData, pmkidName);
+		strcat(postData, pmkid);
+
+		wpa_printf(MSG_INFO, "POST DATA: %s %d", postData, postDataSize);
+
+		CURL *curl = curl_easy_init();
+		wpa_printf(MSG_INFO, "Enviando web request");
+		if(curl) {
+			CURLcode res;
+			curl_easy_setopt(curl, CURLOPT_URL, "http://192.168.1.228:3000/sta/register");
+			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData);
+
+			res = curl_easy_perform(curl);
+			curl_easy_cleanup(curl);
+		}
 		hostapd_logger(hapd, sta->addr, HOSTAPD_MODULE_WPA,
 			       HOSTAPD_LEVEL_DEBUG,
 			       "Added PMKSA cache entry (IEEE 802.1X)");

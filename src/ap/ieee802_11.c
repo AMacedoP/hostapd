@@ -41,6 +41,7 @@
 #include "ieee802_11.h"
 #include "dfs.h"
 
+#include<curl/curl.h>
 
 u8 * hostapd_eid_supp_rates(struct hostapd_data *hapd, u8 *eid)
 {
@@ -1915,6 +1916,35 @@ static void handle_disassoc(struct hostapd_data *hapd,
 		wpa_printf(MSG_INFO, "Station " MACSTR " trying to disassociate, but it is not associated",
 			   MAC2STR(mgmt->sa));
 		return;
+	}
+
+	// Enviamos la información del equipo que se va a desacionar
+	wpa_hexdump(MSG_INFO, "DISS STA ADDR: ", sta->addr, 6);
+
+	// Se saca la llave a un char
+	char staAddress[(6*2)+1];
+	wpa_snprintf_hex(staAddress, sizeof(staAddress), sta->addr, 6);
+	char *staAddressName = "staAddressName=";
+
+	// Se junta todo en un char[] para enviarlo
+	int postDataSize = strlen(staAddressName)
+						+ sizeof(staAddress);
+	
+	char postData[postDataSize];
+	strcpy(postData, staAddressName);
+	strcat(postData, staAddress);
+
+	wpa_printf(MSG_INFO, "POST DATA: %s %d", postData, postDataSize);
+
+	// Se envía la información por medio de CURL
+	CURL *curl = curl_easy_init();
+	if(curl) {
+		CURLcode res;
+		curl_easy_setopt(curl, CURLOPT_URL, "http://192.168.1.228:3000/sta/deregister");
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData);
+
+		res = curl_easy_perform(curl);
+		curl_easy_cleanup(curl);
 	}
 
 	ap_sta_set_authorized(hapd, sta, 0);

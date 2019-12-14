@@ -274,6 +274,7 @@ wpa_auth_sta_get_pmksa(struct wpa_state_machine *sm);
 void wpa_auth_sta_local_mic_failure_report(struct wpa_state_machine *sm);
 const u8 * wpa_auth_get_wpa_ie(struct wpa_authenticator *wpa_auth,
 			       size_t *len);
+void link_sm_cache_entry(struct wpa_authenticator *wpa_auth, struct wpa_state_machine *sm);
 int wpa_auth_pmksa_add(struct wpa_state_machine *sm, const u8 *pmk,
 		       int session_timeout, struct eapol_state_machine *eapol);
 int wpa_auth_pmksa_add_preauth(struct wpa_authenticator *wpa_auth,
@@ -328,5 +329,7 @@ struct rsn_pmksa_cache_entry *
 wpa_auth_pmksa_create_entry(struct wpa_authenticator *wpa_auth, const u8 *aa, const u8 *spa, const u8 *pmk,
 			    const u8 *pmkid, int expiration);
 void wpa_auth_pmksa_flush(struct wpa_authenticator *wpa_auth);
+struct wpa_authenticator *
+wpa_auth_sm_get_wpa_authenticator(struct wpa_state_machine *sm);
 
 #endif /* WPA_AUTH_H */

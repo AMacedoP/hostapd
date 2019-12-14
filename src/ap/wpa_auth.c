@@ -3212,6 +3212,11 @@ const u8 * wpa_auth_get_wpa_ie(struct wpa_authenticator *wpa_auth, size_t *len)
 	return wpa_auth->wpa_ie;
 }
 
+void link_sm_cache_entry(struct wpa_authenticator *wpa_auth, struct wpa_state_machine *sm)
+{
+	sm->pmksa = pmksa_cache_auth_get(wpa_auth->pmksa, sm->addr, NULL);
+	return ;
+}
 
 int wpa_auth_pmksa_add(struct wpa_state_machine *sm, const u8 *pmk,
 		       int session_timeout, struct eapol_state_machine *eapol)
@@ -3224,7 +3229,10 @@ int wpa_auth_pmksa_add(struct wpa_state_machine *sm, const u8 *pmk,
 				 sm->PTK.kck, sm->PTK.kck_len,
 				 sm->wpa_auth->addr, sm->addr, session_timeout,
 				 eapol, sm->wpa_key_mgmt))
-		return 0;
+		{
+			link_sm_cache_entry(sm->wpa_auth, sm);
+			return 0;
+		}
 
 	return -1;
 }
@@ -3453,4 +3461,9 @@ void wpa_auth_pmksa_flush(struct wpa_authenticator *wpa_auth)
 {
 	if (wpa_auth && wpa_auth->pmksa)
 		pmksa_cache_auth_flush(wpa_auth->pmksa);
+}
+
+struct wpa_authenticator *
+wpa_auth_sm_get_wpa_authenticator(struct wpa_state_machine *sm) {
+	return sm ? sm->wpa_auth : NULL;
 }
