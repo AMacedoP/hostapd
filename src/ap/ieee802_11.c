@@ -1922,8 +1922,8 @@ static void handle_disassoc(struct hostapd_data *hapd,
 	wpa_hexdump(MSG_INFO, "DISS STA ADDR: ", sta->addr, 6);
 
 	// Se saca la llave a un char
-	char staAddress[(6*2)+1];
-	wpa_snprintf_hex(staAddress, sizeof(staAddress), sta->addr, 6);
+	char staAddress[(9*2)+1];
+	snprintf(staAddress, sizeof(staAddress), MACSTR, MAC2STR(sta->addr));
 	char *staAddressName = "staAddressName=";
 
 	// Se junta todo en un char[] para enviarlo

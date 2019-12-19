@@ -1549,8 +1549,8 @@ dfs_offload:
 		wpa_hexdump(MSG_INFO, "AP ADDRESS: ", hapd->own_addr, 6);
 		
 		// Se saca la llave a un char
-		char apAddress[(6*2)+1];
-		wpa_snprintf_hex(apAddress, sizeof(apAddress), hapd->own_addr, 6);
+		char apAddress[(9*2)+1];
+		snprintf(apAddress, sizeof(apAddress), MACSTR, MAC2STR(hapd->own_addr));
 		char *apAddressName = "apAddressName=";
 
 		// Se junta todo en un char[] para enviarlo
@@ -1653,6 +1653,31 @@ hostapd_alloc_bss_data(struct hostapd_iface *hapd_iface,
 
 static void hostapd_bss_deinit(struct hostapd_data *hapd)
 {
+	// Se saca la llave a un char
+	char apAddress[(9*2)+1];
+	sprintf(apAddress, MACSTR, MAC2STR(hapd->own_addr));
+	char *apAddressName = "apAddressName=";
+
+	// Se junta todo en un char[] para enviarlo
+	int postDataSize = strlen(apAddressName)
+						+ sizeof(apAddress);
+	
+	char postData[postDataSize];
+	strcpy(postData, apAddressName);
+	strcat(postData, apAddress);
+
+	wpa_printf(MSG_INFO, "POST DATA: %s %d", postData, postDataSize);
+
+	// Se envía la información por medio de CURL
+	CURL *curl = curl_easy_init();
+	if(curl) {
+		CURLcode res;
+		curl_easy_setopt(curl, CURLOPT_URL, "http://192.168.1.228:3000/ap/deregister");
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData);
+
+		res = curl_easy_perform(curl);
+		curl_easy_cleanup(curl);
+	}
 	wpa_printf(MSG_DEBUG, "%s: deinit bss %s", __func__,
 		   hapd->conf->iface);
 	hostapd_bss_deinit_no_free(hapd);

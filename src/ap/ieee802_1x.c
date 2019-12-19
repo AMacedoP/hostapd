@@ -2570,22 +2570,27 @@ static void ieee802_1x_finished(struct hostapd_data *hapd,
 
 		char pmk[(PMK_LEN*2)+1];
 		char pmkid[(PMKID_LEN*2)+1];
-		char staAddr[(6*2)+1];
+		char staAddr[(9*2)+1];
+		char expiration[20];
 
 		wpa_snprintf_hex(pmk, sizeof(pmk), key, PMK_LEN);
 		wpa_snprintf_hex(pmkid, sizeof(pmkid), pcacheE->pmkid, PMKID_LEN);
-		wpa_snprintf_hex(staAddr, sizeof(staAddr), sta->addr, 6);
+	    snprintf(staAddr, sizeof(staAddr), MACSTR, MAC2STR(sta->addr));
+		snprintf(expiration, sizeof(expiration), "%d", pcacheE->expiration);
 
-		char *staName = "sta=";
+		char *staName = "staAddressName=";
 		char *pmkName = "&pmk=";
 		char *pmkidName = "&pmkid=";
+		char *expirationName = "&expiration=";
 
 		int postDataSize = strlen(staName)
 						 + sizeof(staAddr)
 						 + strlen(pmkName)
 						 + sizeof(pmk)
 						 + strlen(pmkidName)
-						 + sizeof(pmkid);
+						 + sizeof(pmkid)
+						 + strlen(expirationName);
+						 + sizeof(expiration);
 		char postData[postDataSize];
 		strcpy(postData, staName);
 		strcat(postData, staAddr);
@@ -2593,6 +2598,8 @@ static void ieee802_1x_finished(struct hostapd_data *hapd,
 		strcat(postData, pmk);
 		strcat(postData, pmkidName);
 		strcat(postData, pmkid);
+		strcat(postData, expirationName);
+		strcat(postData, expiration);
 
 		wpa_printf(MSG_INFO, "POST DATA: %s %d", postData, postDataSize);
 
