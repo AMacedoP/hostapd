@@ -1,0 +1,57 @@
+diff --git a/package/network/services/hostapd/Makefile b/package/network/services/hostapd/Makefile
+index 462a4cf..e8a27fb 100644
+--- a/package/network/services/hostapd/Makefile
++++ b/package/network/services/hostapd/Makefile
+@@ -11,15 +11,17 @@ PKG_VERSION:=2016-06-15
+ PKG_RELEASE:=2
+ PKG_REV:=31d3692fe5d56c05753ed4a70c7943979e1d29e7
+ 
+-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
+-PKG_SOURCE_URL:=git://w1.fi/srv/git/hostap.git
+-PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+-PKG_SOURCE_VERSION:=$(PKG_REV)
+-PKG_SOURCE_PROTO:=git
++PKG_SOURCE=hostapdtesis.tar.gz
++PKS_SOURCE_SUBDIR=hostapd_JJ
++#PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
++#PKG_SOURCE_URL:=git://w1.fi/srv/git/hostap.git
++#PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
++#PKG_SOURCE_VERSION:=$(PKG_REV)
++#PKG_SOURCE_PROTO:=git
+ # PKG_MIRROR_MD5SUM:=4e7c1f97edd7514535056fce54ae053a
+ 
+-PKG_MAINTAINER:=Felix Fietkau <nbd@openwrt.org>
+-PKG_LICENSE:=BSD-3-Clause
++#PKG_MAINTAINER:=Felix Fietkau <nbd@openwrt.org>
++#PKG_LICENSE:=BSD-3-Clause
+ 
+ PKG_BUILD_PARALLEL:=1
+ 
+@@ -53,7 +55,8 @@ ifeq ($(LOCAL_TYPE),supplicant)
+   endif
+ endif
+ 
+-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_VERSION)
++#PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_VERSION)
++PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(BUILD_VARIANT)/hostapd_JJ
+ 
+ include $(INCLUDE_DIR)/package.mk
+ 
+@@ -100,6 +103,8 @@ ifdef CONFIG_USE_GLIBC
+   TARGET_LDFLAGS_C += -lrt
+ endif
+ 
++TARGET_LDFLAGS += -lcurl
++
+ DRV_DEPENDS:=+PACKAGE_kmod-cfg80211:libnl-tiny
+ 
+ define Package/hostapd/Default
+@@ -107,7 +112,7 @@ define Package/hostapd/Default
+   CATEGORY:=Network
+   TITLE:=IEEE 802.1x Authenticator
+   URL:=http://hostap.epitest.fi/
+-  DEPENDS:=$(DRV_DEPENDS) +hostapd-common +libubus
++  DEPENDS:=$(DRV_DEPENDS) +hostapd-common +libubus +libcurl
+ endef
+ 
+ define Package/hostapd
